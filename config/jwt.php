@@ -101,7 +101,8 @@ return [
     |
     */
 
-    'ttl' => env('JWT_TTL', 60),
+    // 'ttl' => env('JWT_TTL', 60), // TIME TO LIVE KOLIKO DA TRAJE
+    'ttl' => env('JWT_TTL', null), // TIME TO LIVE KOLIKO DA TRAJE
 
     /*
     |--------------------------------------------------------------------------
@@ -150,7 +151,7 @@ return [
     'required_claims' => [
         'iss',
         'iat',
-        'exp',
+        // 'exp',
         'nbf',
         'sub',
         'jti',

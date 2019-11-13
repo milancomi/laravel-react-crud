@@ -16,7 +16,7 @@ public function __construct(UrlGenerator $urlGenerator)
 {
     $this->middleware("auth:users");
     $this->contacts = new Contacts;
-    $this->base_url = $urlGenerator-to("/");
+    $this->base_url = $urlGenerator->to("/");
 }
 
 //this function/end-point is to create new contact spec for user /
@@ -99,7 +99,8 @@ public function getPaginatedData($token,$pagination=null)
 {
     $file_directory = $this->base_url."profile_images";
     $user = auth("users")->authenticate($token);
-    $user_id = $user->user_id;
+
+    $user_id = $user->id;
     if($pagination==null || $pagination==""){
 
         $contacts = $this->contacts->where("user_id",$user_id)->orderBy("id","DESC")->get()->toArray();
@@ -144,13 +145,15 @@ public function editSingleData(Request $request,$id)
             "message"=>"Id is not valid"
         ],500);
         }
+
         $getFile = $findData->image_file;
-        $getFile == "default-avatar.png" ? :unlink("./profile_images/".$getFile);
+        $getFile=="default-avatar.png";
         $profile_picture = $request->profile_image;
         $file_name = "";
+
         if($profile_picture ==null){
             $file_name = "default-avatar.png";
-        }else{
+        }else {
             $generate_name = uniqid()."_".time().date("Ymd")."_IMG";
             $base64Image = $profile_picture;
 
@@ -183,19 +186,22 @@ public function editSingleData(Request $request,$id)
             $findData->save();
 
 
-    $this->contact->save();
     if($profile_picture == null)
     {
 
     }else{
         file_put_contents("./profile_images/".$file_name,$fileBin);
     }
-
     return response()->json([
         "success"=>true,
         "message"=>"Contact updated successfully !"
     ],200);
         }
+        return response()->json([
+            "success"=>true,
+            "message"=>"Contact updated successfully !",
+            "data"=>$findData
+        ],200);
 }
 
 public function deleteContacts($id)
@@ -215,7 +221,7 @@ public function deleteContacts($id)
     $getFile = $findData->image_file;
     if($findData->delete())
     {
-        $getFile == "default-avatar.png" ? :unlink("./profile_image".$getFile);
+        // $getFile == "default-avatar.png" ? :unlink("./profile_image".$getFile);
 
         return response()->json([
             "success"=>true,
@@ -247,12 +253,13 @@ public function deleteContacts($id)
         }
 
 
-        public function searchData($search,$pagination=null,$token)
+        public function searchData($search,$token,$pagination=null)
         {
 
             $file_directory = $this->base_url."/profile_images";
             $user = auth("users")->authenticate($token);
             $user_id = $user->id;
+
             if($pagination==null || $pagination=="")
             {
 
@@ -269,13 +276,12 @@ public function deleteContacts($id)
                     "file_directory" =>$file_directory
                 ],200);
             }
-            $paginated_search_query = $this->contacts::where("user_id",$user_id)->
+            $paginated_search_query = Contacts::where("user_id",$user_id)->
             where(function($query) use ($search){
-                $query-where("first_name","LIKE","%$search%")->orWhere("last_name","LIKE","%$search%")
-                ->orWhere("email","LIKE","%$search%")
-                ->orWhere("phonenumber","LIKE","%$search%");
+                $query->where("first_name","LIKE","%$search%")->orWhere("last_name","LIKE","%$search%");
+                // ->orWhere("email","LIKE","%$search%")
+                // ->orWhere("phonenumber","LIKE","%$search%");
             })->orderBy("id","DESC")->paginate($pagination);
-
             return response()->json([
                 "success"=>true,
                 "data"=>$paginated_search_query,
